@@ -1,0 +1,36 @@
+import openai
+import pandas as pd
+
+
+file_path = 'library.xlsx'
+data = pd.read_excel(file_path)
+
+
+client = openai.OpenAI(api_key='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’ )
+
+def generate_response(client, model, prompt):
+    response = client.create_completion(
+        model=model,
+        prompt=prompt,
+        temperature=0.2,  # Lower temperature for more deterministic outputs
+        max_tokens=1  # Ensure only one word is generated
+    )
+    return response.choices[0].text.strip()
+
+def zero_shot_prediction(client, model, data):
+    predictions = []
+    for requirement in data['DATA'].dropna():
+        # Directly asking the model to generate a single code
+        prompt = f"Identify the most relevant Qualitative data analysis code from the following list [report, book, library, authentication, member, staff, record, admin] for this software requirement: '{requirement}'"
+        response = generate_response(client, model, prompt)
+        predictions.append((requirement, response))
+    return predictions
+
+
+model = "gpt-3.5-turbo" 
+
+zero_shot_results = zero_shot_prediction(client, model, data)
+
+
+
+
